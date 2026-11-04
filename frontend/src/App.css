@@ -265,17 +265,174 @@ button:disabled {
   position: relative;
 }
 
+/* Investigation Command Center Hub */
+.investigation-hub-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.ring-selector-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1.25rem;
+  flex-wrap: wrap;
+}
+
+.strip-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.ring-pills-list {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ring-select-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ring-select-pill:hover {
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.ring-select-pill.active {
+  background-color: var(--bg-card-secondary);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.pill-critical .pill-dot { background-color: var(--color-critical); }
+.pill-high .pill-dot { background-color: var(--color-high); }
+.pill-medium .pill-dot { background-color: var(--color-medium); }
+.pill-low .pill-dot { background-color: var(--color-low); }
+
+.ring-select-pill.active.pill-critical {
+  border-color: var(--color-critical);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+}
+
+.ring-select-pill.active.pill-high {
+  border-color: var(--color-high);
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.2);
+}
+
+.pill-score {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* 2-Column Split Workspace */
+.hub-split-workspace {
+  display: grid;
+  grid-template-columns: minmax(400px, 1fr) minmax(420px, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.hub-split-workspace.graph-expanded-mode {
+  grid-template-columns: 1fr;
+}
+
+.hub-dossier-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.hub-network-column {
+  position: sticky;
+  top: 1rem;
+}
+
 /* Network Graph View - Structured & Docked Layout */
 .network-section-container {
   display: flex;
   flex-direction: column;
-  height: 740px;
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
+
+.network-section-container.compact-view {
+  height: 560px;
+}
+
+.network-section-container.expanded-view {
+  height: 740px;
+}
+
+.network-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 1.25rem;
+  background-color: var(--bg-card-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.network-panel-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.network-counter-pill {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background-color: var(--bg-app);
+  padding: 2px 7px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+}
+
+.expand-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.expand-toggle-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--color-primary);
+}
+
 
 /* Two-tier Clean Toolbar */
 .clean-toolbar {

@@ -4,7 +4,6 @@ import {
   Network,
   Users,
   Search,
-  FileSpreadsheet,
   CreditCard,
   RefreshCw,
   Upload,
@@ -12,7 +11,7 @@ import {
   AlertTriangle,
   Layers,
   ArrowRight,
-  ExternalLink,
+  Maximize2,
 } from "lucide-react";
 
 import { checkHealth, loadSampleData, runAnalysis, updateGroupStatus } from "./services/api";
@@ -24,7 +23,7 @@ import PayPalSandboxPortal from "./components/PayPalSandboxPortal";
 import "./App.css";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState("graph"); // "graph", "groups", "investigation", "transactions", "paypal"
+  const [activeTab, setActiveTab] = useState("hub"); // "hub", "groups", "transactions", "paypal"
   const [backendOnline, setBackendOnline] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -34,6 +33,7 @@ export default function App() {
   const [edges, setEdges] = useState([]);
   const [groups, setGroups] = useState([]);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
+  const [isGraphExpanded, setIsGraphExpanded] = useState(false);
 
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
   const [notification, setNotification] = useState("");
@@ -93,7 +93,6 @@ export default function App() {
 
   const handleStatusUpdate = async (groupId, payload) => {
     const updated = await updateGroupStatus(groupId, payload);
-    // Update local state
     setGroups((prev) =>
       prev.map((g) => (g.group_id === groupId ? { ...g, ...updated } : g))
     );
@@ -135,15 +134,15 @@ export default function App() {
           </div>
 
           <button onClick={handleLoadSample} disabled={loading} className="btn-secondary">
-            <RefreshCw size={15} /> Load Sample Data
+            <RefreshCw size={14} /> Load Sample Data
           </button>
 
           <button onClick={() => setIsCsvModalOpen(true)} className="btn-secondary">
-            <Upload size={15} /> Upload CSV
+            <Upload size={14} /> Upload CSV
           </button>
 
           <button onClick={fetchData} disabled={loading} className="btn-primary">
-            <RefreshCw size={15} className={loading ? "spin" : ""} /> Run Analysis
+            <RefreshCw size={14} className={loading ? "spin" : ""} /> Run Analysis
           </button>
         </div>
       </header>
@@ -197,10 +196,10 @@ export default function App() {
       {/* Navigation Tabs */}
       <nav className="tabs-nav">
         <button
-          className={`tab-btn ${activeTab === "graph" ? "active" : ""}`}
-          onClick={() => setActiveTab("graph")}
+          className={`tab-btn ${activeTab === "hub" ? "active" : ""}`}
+          onClick={() => setActiveTab("hub")}
         >
-          <Network size={16} /> Network Graph ({nodes.length} nodes)
+          <Layers size={16} /> Investigation Command Center
         </button>
 
         <button
@@ -208,13 +207,6 @@ export default function App() {
           onClick={() => setActiveTab("groups")}
         >
           <Users size={16} /> Suspicious Groups ({groups.length})
-        </button>
-
-        <button
-          className={`tab-btn ${activeTab === "investigation" ? "active" : ""}`}
-          onClick={() => setActiveTab("investigation")}
-        >
-          <Layers size={16} /> Deep Investigation {activeGroup ? `(${activeGroup.group_id})` : ""}
         </button>
 
         <button
@@ -242,23 +234,73 @@ export default function App() {
           </div>
         ) : (
           <>
-            {activeTab === "graph" && (
-              <NetworkGraph
-                nodes={nodes}
-                edges={edges}
-                groups={groups}
-                selectedGroupId={selectedGroupId}
-                onSelectGroup={(gid) => {
-                  setSelectedGroupId(gid);
-                }}
-                onSelectNode={(node) => {
-                  if (node && node.group_ids && node.group_ids.length > 0) {
-                    setSelectedGroupId(node.group_ids[0]);
-                  }
-                }}
-              />
+            {/* TAB 1: INTEGRATED INVESTIGATION COMMAND CENTER (SPLIT VIEW) */}
+            {activeTab === "hub" && (
+              <div className="investigation-hub-container">
+                {/* Ring Selector Strip */}
+                <div className="ring-selector-strip">
+                  <span className="strip-label">Select Ring to Investigate:</span>
+                  <div className="ring-pills-list">
+                    {groups.map((g) => (
+                      <button
+                        key={g.group_id}
+                        type="button"
+                        className={`ring-select-pill ${selectedGroupId === g.group_id ? "active" : ""} pill-${g.risk_level.toLowerCase()}`}
+                        onClick={() => setSelectedGroupId(g.group_id)}
+                      >
+                        <span className="pill-dot" />
+                        <strong>{g.group_id}</strong>
+                        <span className="pill-score">{Math.round(g.risk_score)} pts</span>
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      className={`ring-select-pill ${selectedGroupId === null ? "active" : ""}`}
+                      onClick={() => setSelectedGroupId(null)}
+                    >
+                      <span>All Accounts Overview</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2-Column Split Workspace */}
+                <div className={`hub-split-workspace ${isGraphExpanded ? "graph-expanded-mode" : ""}`}>
+                  {/* Left Column: Deep Evidence Dossier */}
+                  {!isGraphExpanded && (
+                    <div className="hub-dossier-column">
+                      <GroupDetailPanel
+                        group={activeGroup}
+                        transactions={flatTransactions}
+                        onUpdateStatus={handleStatusUpdate}
+                        onFocusGroupInGraph={(gid) => {
+                          setSelectedGroupId(gid);
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Right Column: Integrated Network Visualizer */}
+                  <div className="hub-network-column">
+                    <NetworkGraph
+                      nodes={nodes}
+                      edges={edges}
+                      groups={groups}
+                      selectedGroupId={selectedGroupId}
+                      onSelectGroup={(gid) => setSelectedGroupId(gid)}
+                      onSelectNode={(node) => {
+                        if (node && node.group_ids && node.group_ids.length > 0) {
+                          setSelectedGroupId(node.group_ids[0]);
+                        }
+                      }}
+                      isExpanded={isGraphExpanded}
+                      onToggleExpand={() => setIsGraphExpanded(!isGraphExpanded)}
+                    />
+                  </div>
+                </div>
+              </div>
             )}
 
+            {/* TAB 2: SUSPICIOUS GROUPS TABLE */}
             {activeTab === "groups" && (
               <div className="groups-tab-content">
                 <div className="table-responsive">
@@ -316,7 +358,7 @@ export default function App() {
                               className="btn-primary btn-sm"
                               onClick={() => {
                                 setSelectedGroupId(g.group_id);
-                                setActiveTab("investigation");
+                                setActiveTab("hub");
                               }}
                             >
                               Investigate <ArrowRight size={13} />
@@ -330,29 +372,19 @@ export default function App() {
               </div>
             )}
 
-            {activeTab === "investigation" && (
-              <GroupDetailPanel
-                group={activeGroup}
-                transactions={flatTransactions}
-                onUpdateStatus={handleStatusUpdate}
-                onFocusGroupInGraph={(gid) => {
-                  setSelectedGroupId(gid);
-                  setActiveTab("graph");
-                }}
-              />
-            )}
-
+            {/* TAB 3: TRANSACTION EXPLORER */}
             {activeTab === "transactions" && (
               <TransactionExplorer
                 transactions={flatTransactions}
                 groups={groups}
                 onSelectGroup={(gid) => {
                   setSelectedGroupId(gid);
-                  setActiveTab("investigation");
+                  setActiveTab("hub");
                 }}
               />
             )}
 
+            {/* TAB 4: PAYPAL SANDBOX */}
             {activeTab === "paypal" && <PayPalSandboxPortal />}
           </>
         )}

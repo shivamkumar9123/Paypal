@@ -14,10 +14,11 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
-  ExternalLink,
   DollarSign,
   AlertOctagon,
   ArrowRight,
+  Maximize,
+  Minimize,
 } from "lucide-react";
 
 const RISK_COLORS = {
@@ -35,6 +36,8 @@ export default function NetworkGraph({
   onSelectNode,
   onSelectEdge,
   onSelectGroup,
+  isExpanded = false,
+  onToggleExpand,
 }) {
   const containerRef = useRef(null);
   const networkRef = useRef(null);
@@ -75,7 +78,6 @@ export default function NetworkGraph({
     // Filter by Min Amount
     if (minAmount > 0) {
       visibleEdges = visibleEdges.filter((e) => e.amount >= minAmount);
-      // Keep nodes connected to these edges
       const edgeNodes = new Set();
       visibleEdges.forEach((e) => {
         edgeNodes.add(e.from_node);
@@ -90,7 +92,7 @@ export default function NetworkGraph({
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Convert to vis-network format
+    // Convert to vis-network format with generous font & spacing
     const visNodes = new DataSet(
       filteredData.visibleNodes.map((node) => {
         const color = RISK_COLORS[node.risk_level] || RISK_COLORS.LOW;
@@ -104,12 +106,11 @@ export default function NetworkGraph({
             border: color.border,
             highlight: color.highlight,
           },
-          font: { color: "#f8fafc", size: 12, face: "Inter, sans-serif" },
+          font: { color: "#ffffff", size: 13, face: "Inter, sans-serif", bold: "600" },
           shape: isCriticalOrHigh ? "box" : "dot",
-          size: Math.max(16, Math.min(28, 14 + (node.in_degree + node.out_degree) * 1.5)),
-          margin: 8,
+          size: Math.max(22, Math.min(34, 18 + (node.in_degree + node.out_degree) * 2)),
+          margin: { top: 10, bottom: 10, left: 14, right: 14 },
           borderWidth: 2,
-          shadow: false, // disable expensive node shadows for crisp rendering
         };
       })
     );
@@ -122,36 +123,41 @@ export default function NetworkGraph({
           from: edge.from_node,
           to: edge.to_node,
           label: `$${edge.amount.toLocaleString()}`,
-          arrows: { to: { enabled: true, scaleFactor: 0.7 } },
+          arrows: { to: { enabled: true, scaleFactor: 0.9 } },
           color: {
             color: isSusp ? "#ef4444" : "#475569",
             highlight: isSusp ? "#f87171" : "#94a3b8",
             hover: isSusp ? "#fca5a5" : "#cbd5e1",
           },
-          width: isSusp ? 2.5 : 1.2,
+          width: isSusp ? 2.8 : 1.4,
           dashes: !isSusp,
           font: {
             color: isSusp ? "#fca5a5" : "#94a3b8",
-            size: 10,
+            size: 11,
+            face: "Inter, sans-serif",
             align: "middle",
             background: "#090d16",
+            strokeWidth: 2,
+            strokeColor: "#090d16",
           },
-          smooth: { type: "curvedCW", roundness: 0.15 },
+          smooth: { type: "curvedCW", roundness: 0.18 },
         };
       })
     );
+
+    const isSmallCluster = filteredData.visibleNodes.length <= 8;
 
     const options = {
       physics: {
         enabled: true,
         solver: "barnesHut",
         barnesHut: {
-          gravitationalConstant: -2500,
-          centralGravity: 0.25,
-          springLength: 110,
+          gravitationalConstant: isSmallCluster ? -4500 : -3000,
+          centralGravity: isSmallCluster ? 0.05 : 0.15,
+          springLength: isSmallCluster ? 220 : 160,
           springConstant: 0.04,
-          damping: 0.8,
-          avoidOverlap: 0.8,
+          damping: 0.85,
+          avoidOverlap: 0.9,
         },
         stabilization: {
           enabled: true,
@@ -175,11 +181,15 @@ export default function NetworkGraph({
     const network = new Network(containerRef.current, { nodes: visNodes, edges: visEdges }, options);
     networkRef.current = network;
 
-    // Once layout stabilizes, FREEZE physics so nodes stay stationary and predictable
+    // Once layout stabilizes, FREEZE physics so nodes stay stationary and auto-fit comfortably
     network.once("stabilizationIterationsDone", () => {
       network.setOptions({ physics: { enabled: false } });
       setPhysicsActive(false);
-      network.fit({ animation: { duration: 400 } });
+      network.fit({
+        nodes: filteredData.visibleNodes.map((n) => n.id),
+        padding: 50,
+        animation: { duration: 350 },
+      });
     });
 
     network.on("selectNode", (params) => {
@@ -221,8 +231,8 @@ export default function NetworkGraph({
     if (match) {
       setSearchFeedback("");
       networkRef.current.focus(match.id, {
-        scale: 1.3,
-        animation: { duration: 600, easingFunction: "easeInOutQuad" },
+        scale: 1.25,
+        animation: { duration: 500, easingFunction: "easeInOutQuad" },
       });
       networkRef.current.selectNodes([match.id]);
       setActiveSelection({ type: "node", data: match });
@@ -238,7 +248,7 @@ export default function NetworkGraph({
     setSearchFeedback("");
     if (networkRef.current) {
       networkRef.current.unselectAll();
-      networkRef.current.fit({ animation: { duration: 400 } });
+      networkRef.current.fit({ padding: 50, animation: { duration: 350 } });
     }
     setActiveSelection(null);
   };
@@ -257,7 +267,7 @@ export default function NetworkGraph({
 
   const handleFit = () => {
     if (!networkRef.current) return;
-    networkRef.current.fit({ animation: { duration: 400 } });
+    networkRef.current.fit({ padding: 50, animation: { duration: 350 } });
   };
 
   const handleReLayout = () => {
@@ -268,7 +278,7 @@ export default function NetworkGraph({
     networkRef.current.once("stabilizationIterationsDone", () => {
       networkRef.current.setOptions({ physics: { enabled: false } });
       setPhysicsActive(false);
-      networkRef.current.fit({ animation: { duration: 400 } });
+      networkRef.current.fit({ padding: 50, animation: { duration: 350 } });
     });
   };
 
@@ -285,35 +295,59 @@ export default function NetworkGraph({
     setSearchQuery("");
     if (onSelectGroup) onSelectGroup(null);
     if (networkRef.current) {
-      networkRef.current.fit({ animation: { duration: 400 } });
+      networkRef.current.fit({ padding: 50, animation: { duration: 350 } });
     }
   };
 
   return (
-    <div className="network-section-container">
+    <div className={`network-section-container ${isExpanded ? "expanded-view" : "compact-view"}`}>
+      {/* Header bar of the network panel */}
+      <div className="network-panel-header">
+        <div className="flex-align-gap">
+          <Layers size={16} className="text-highlight" />
+          <span className="network-panel-title">
+            {selectedGroupId ? `Visualizing Ring: ${selectedGroupId}` : "Full Network Topology"}
+          </span>
+          <span className="network-counter-pill">
+            {filteredData.visibleNodes.length} accounts / {filteredData.visibleEdges.length} transfers
+          </span>
+        </div>
+
+        <div className="network-header-actions">
+          {onToggleExpand && (
+            <button
+              onClick={onToggleExpand}
+              className="expand-toggle-btn"
+              title={isExpanded ? "Restore Split View" : "Expand to Full Width"}
+            >
+              {isExpanded ? <Minimize size={14} /> : <Maximize size={14} />}
+              <span>{isExpanded ? "Collapse View" : "Expand Fullscreen"}</span>
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Structured, Clean Controls Toolbar */}
       <div className="clean-toolbar">
-        {/* Row 1: Primary Search & Group Selector */}
         <div className="toolbar-row primary-controls">
           <form className="search-bar-clean" onSubmit={handleSearch}>
-            <Search size={15} className="search-icon" />
+            <Search size={14} className="search-icon" />
             <input
               type="text"
-              placeholder="Search account (e.g. ACC_ALPHA_1)..."
+              placeholder="Find account (e.g. ACC_ALPHA_1)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             {searchQuery && (
-              <button type="button" onClick={clearSearch} className="clear-search-btn" title="Clear search">
-                <X size={14} />
+              <button type="button" onClick={clearSearch} className="clear-search-btn" title="Clear">
+                <X size={13} />
               </button>
             )}
-            <button type="submit" className="search-submit-btn">Find & Focus</button>
+            <button type="submit" className="search-submit-btn">Locate</button>
           </form>
 
           {/* Group Selector Dropdown */}
           <div className="group-dropdown-wrapper">
-            <label className="dropdown-label"><Layers size={14} /> Focus Group:</label>
             <select
               value={selectedGroupId || "ALL"}
               onChange={(e) => {
@@ -322,7 +356,7 @@ export default function NetworkGraph({
               }}
               className="group-select"
             >
-              <option value="ALL">All Network Groups ({groups.length} detected)</option>
+              <option value="ALL">Show All Accounts ({groups.length} groups)</option>
               {groups.map((g) => (
                 <option key={g.group_id} value={g.group_id}>
                   {g.group_id} — {g.risk_level} ({Math.round(g.risk_score)} pts)
@@ -333,111 +367,75 @@ export default function NetworkGraph({
 
           {(selectedGroupId || filterRisk !== "ALL" || minAmount > 0) && (
             <button onClick={resetAllFilters} className="btn-reset-filters" title="Reset all filters">
-              <RotateCcw size={13} /> Reset Filters
+              <RotateCcw size={12} /> Reset
             </button>
           )}
         </div>
 
-        {/* Row 2: Secondary Filters (Risk Chips & Amount) */}
-        <div className="toolbar-row secondary-controls">
-          <div className="chip-filter-group">
-            <span className="filter-title"><Filter size={13} /> Risk Level:</span>
-            {["ALL", "CRITICAL", "HIGH", "MEDIUM", "LOW"].map((level) => (
-              <button
-                key={level}
-                type="button"
-                className={`filter-chip ${filterRisk === level ? "active" : ""} chip-${level.toLowerCase()}`}
-                onClick={() => setFilterRisk(level)}
-              >
-                {level === "ALL" ? "All Levels" : level}
-              </button>
-            ))}
-          </div>
-
-          <div className="amount-filter-clean">
-            <DollarSign size={14} className="text-muted" />
-            <span>Min Amount:</span>
-            <input
-              type="number"
-              min="0"
-              step="500"
-              value={minAmount}
-              onChange={(e) => setMinAmount(Math.max(0, Number(e.target.value)))}
-              className="amount-input"
-              placeholder="0"
-            />
-          </div>
-
-          <div className="visible-count-label">
-            Showing <strong>{filteredData.visibleNodes.length}</strong> nodes / <strong>{filteredData.visibleEdges.length}</strong> transfers
-          </div>
-        </div>
-
         {searchFeedback && (
           <div className="search-feedback-banner">
-            <AlertOctagon size={14} /> {searchFeedback}
+            <AlertOctagon size={13} /> {searchFeedback}
           </div>
         )}
       </div>
 
-      {/* Main Layout Area: Canvas on left, Docked Inspector on right */}
+      {/* Main Canvas Area */}
       <div className="canvas-dock-layout">
-        {/* Canvas Area */}
         <div className="canvas-main-area">
           <div ref={containerRef} className="vis-canvas" />
 
-          {/* Floating Navigation Controls (Clean, grouped, semi-transparent) */}
+          {/* Floating Navigation Controls */}
           <div className="floating-nav-dock">
             <button onClick={handleZoomIn} title="Zoom In" className="nav-dock-btn">
-              <ZoomIn size={16} />
+              <ZoomIn size={15} />
             </button>
             <button onClick={handleZoomOut} title="Zoom Out" className="nav-dock-btn">
-              <ZoomOut size={16} />
+              <ZoomOut size={15} />
             </button>
             <div className="nav-dock-divider" />
             <button onClick={handleFit} title="Fit to Screen" className="nav-dock-btn">
-              <Maximize2 size={16} />
+              <Maximize2 size={15} />
             </button>
-            <button onClick={handleReLayout} title="Auto-rearrange Layout" className="nav-dock-btn">
-              <RotateCcw size={16} />
+            <button onClick={handleReLayout} title="Rearrange Layout" className="nav-dock-btn">
+              <RotateCcw size={15} />
             </button>
             <button
               onClick={togglePhysics}
-              title={physicsActive ? "Physics is Active (Click to Lock/Freeze)" : "Physics is Frozen (Click to Relax)"}
+              title={physicsActive ? "Physics is Active (Click to Freeze)" : "Physics is Frozen"}
               className={`nav-dock-btn ${physicsActive ? "active-physics" : ""}`}
             >
-              {physicsActive ? <Unlock size={16} /> : <Lock size={16} />}
+              {physicsActive ? <Unlock size={15} /> : <Lock size={15} />}
             </button>
           </div>
 
-          {/* Minimal Collapsible Legend at Bottom-Left */}
+          {/* Collapsible Legend at Bottom-Left */}
           <div className="collapsible-legend-dock">
             <button
               type="button"
               className="legend-toggle-btn"
               onClick={() => setShowLegend(!showLegend)}
             >
-              <span>Graph Legend</span>
-              {showLegend ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+              <span>Legend</span>
+              {showLegend ? <ChevronDown size={12} /> : <ChevronUp size={12} />}
             </button>
 
             {showLegend && (
               <div className="legend-expanded-content">
                 <div className="legend-row">
-                  <span className="dot dot-critical" /> <span>Critical Risk ({">="} 80 pts)</span>
+                  <span className="dot dot-critical" /> <span>Critical ({">="}80 pts)</span>
                 </div>
                 <div className="legend-row">
-                  <span className="dot dot-high" /> <span>High Risk (60–79 pts)</span>
+                  <span className="dot dot-high" /> <span>High (60–79 pts)</span>
                 </div>
                 <div className="legend-row">
-                  <span className="dot dot-medium" /> <span>Medium Risk (35–59 pts)</span>
+                  <span className="dot dot-medium" /> <span>Medium (35–59 pts)</span>
                 </div>
                 <div className="legend-row">
-                  <span className="dot dot-low" /> <span>Low / Legitimate (0–34 pts)</span>
+                  <span className="dot dot-low" /> <span>Low (0–34 pts)</span>
                 </div>
                 <div className="legend-divider" />
                 <div className="legend-row">
-                  <span className="line-suspicious" /> <span>Suspicious Ring Transfer</span>
+                  <span className="line-suspicious" /> <span>Suspicious Ring Flow</span>
                 </div>
                 <div className="legend-row">
                   <span className="line-normal" /> <span>Standard Payment</span>
@@ -447,13 +445,13 @@ export default function NetworkGraph({
           </div>
         </div>
 
-        {/* Docked Inspector Panel (Right side, non-overlapping) */}
+        {/* Docked Inspector Panel */}
         {activeSelection && (
           <aside className="docked-inspector-panel">
             <div className="inspector-top-bar">
               <h4>{activeSelection.type === "node" ? "Account Inspector" : "Transfer Inspector"}</h4>
               <button onClick={() => setActiveSelection(null)} className="close-dock-btn" title="Close Panel">
-                <X size={16} />
+                <X size={15} />
               </button>
             </div>
 
@@ -513,25 +511,25 @@ export default function NetworkGraph({
 
                   <div className="inspector-flow-card">
                     <div className="flow-node">
-                      <span className="flow-role">Origin (Sender)</span>
+                      <span className="flow-role">Sender</span>
                       <strong className="mono">{activeSelection.data.from_node}</strong>
                     </div>
                     <div className="flow-arrow">&darr;</div>
                     <div className="flow-node">
-                      <span className="flow-role">Destination (Receiver)</span>
+                      <span className="flow-role">Receiver</span>
                       <strong className="mono">{activeSelection.data.to_node}</strong>
                     </div>
                   </div>
 
                   <div className="inspector-stat-grid">
                     <div className="stat-tile">
-                      <span className="stat-label">Amount Transferred</span>
+                      <span className="stat-label">Amount</span>
                       <span className="stat-value text-highlight font-semibold">
                         ${activeSelection.data.amount.toLocaleString()}
                       </span>
                     </div>
                     <div className="stat-tile">
-                      <span className="stat-label">Detection Status</span>
+                      <span className="stat-label">Status</span>
                       <span className={activeSelection.data.is_suspicious ? "badge badge-critical" : "badge badge-low"}>
                         {activeSelection.data.is_suspicious ? "SUSPICIOUS" : "STANDARD"}
                       </span>
@@ -540,21 +538,8 @@ export default function NetworkGraph({
 
                   <div className="timestamp-tile">
                     <span className="stat-label">Timestamp</span>
-                    <span className="mono text-sm">{activeSelection.data.timestamp}</span>
+                    <span className="mono text-xs">{activeSelection.data.timestamp}</span>
                   </div>
-
-                  {activeSelection.data.group_ids && activeSelection.data.group_ids.length > 0 && (
-                    <div className="inspector-groups-section">
-                      <span className="inspector-label">Associated Ring</span>
-                      <button
-                        className="group-link-btn"
-                        onClick={() => onSelectGroup(activeSelection.data.group_ids[0])}
-                      >
-                        <span>{activeSelection.data.group_ids[0]}</span>
-                        <ArrowRight size={13} />
-                      </button>
-                    </div>
-                  )}
                 </>
               )}
             </div>
