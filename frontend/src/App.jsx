@@ -12,10 +12,12 @@ import {
   Layers,
   ArrowRight,
   Maximize2,
+  Clock,
 } from "lucide-react";
 
 import { checkHealth, loadSampleData, runAnalysis, updateGroupStatus } from "./services/api";
 import NetworkGraph from "./components/NetworkGraph";
+import VisualMoneyFlow from "./components/VisualMoneyFlow";
 import GroupDetailPanel from "./components/GroupDetailPanel";
 import TransactionExplorer from "./components/TransactionExplorer";
 import CsvUploadModal from "./components/CsvUploadModal";
@@ -33,6 +35,7 @@ export default function App() {
   const [edges, setEdges] = useState([]);
   const [groups, setGroups] = useState([]);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
+  const [visualMode, setVisualMode] = useState("flow"); // "flow" (step-by-step easy map) or "graph" (2d topology)
   const [isGraphExpanded, setIsGraphExpanded] = useState(false);
 
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
@@ -279,22 +282,51 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Right Column: Integrated Network Visualizer */}
+                  {/* Right Column: Visual Flow Map OR 2D Network */}
                   <div className="hub-network-column">
-                    <NetworkGraph
-                      nodes={nodes}
-                      edges={edges}
-                      groups={groups}
-                      selectedGroupId={selectedGroupId}
-                      onSelectGroup={(gid) => setSelectedGroupId(gid)}
-                      onSelectNode={(node) => {
-                        if (node && node.group_ids && node.group_ids.length > 0) {
-                          setSelectedGroupId(node.group_ids[0]);
-                        }
-                      }}
-                      isExpanded={isGraphExpanded}
-                      onToggleExpand={() => setIsGraphExpanded(!isGraphExpanded)}
-                    />
+                    <div className="visualizer-toggle-header">
+                      <div className="segmented-switch">
+                        <button
+                          type="button"
+                          className={`switch-tab ${visualMode === "flow" ? "active" : ""}`}
+                          onClick={() => setVisualMode("flow")}
+                        >
+                          <Clock size={13} /> Step-by-Step Flow Map (Easy)
+                        </button>
+                        <button
+                          type="button"
+                          className={`switch-tab ${visualMode === "graph" ? "active" : ""}`}
+                          onClick={() => setVisualMode("graph")}
+                        >
+                          <Network size={13} /> 2D Topology Canvas
+                        </button>
+                      </div>
+                    </div>
+
+                    {visualMode === "flow" ? (
+                      <VisualMoneyFlow
+                        group={activeGroup}
+                        transactions={flatTransactions}
+                        onSelectAccount={(accId) => {
+                          // Focus account
+                        }}
+                      />
+                    ) : (
+                      <NetworkGraph
+                        nodes={nodes}
+                        edges={edges}
+                        groups={groups}
+                        selectedGroupId={selectedGroupId}
+                        onSelectGroup={(gid) => setSelectedGroupId(gid)}
+                        onSelectNode={(node) => {
+                          if (node && node.group_ids && node.group_ids.length > 0) {
+                            setSelectedGroupId(node.group_ids[0]);
+                          }
+                        }}
+                        isExpanded={isGraphExpanded}
+                        onToggleExpand={() => setIsGraphExpanded(!isGraphExpanded)}
+                      />
+                    )}
                   </div>
                 </div>
               </div>

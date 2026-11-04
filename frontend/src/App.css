@@ -1594,3 +1594,410 @@ button:disabled {
   font-size: 0.75rem;
   font-weight: 500;
 }
+
+/* Visualizer Toggle Header */
+.visualizer-toggle-header {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.segmented-switch {
+  display: flex;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  gap: 4px;
+}
+
+.switch-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.switch-tab:hover {
+  color: var(--text-primary);
+}
+
+.switch-tab.active {
+  background-color: var(--bg-card-secondary);
+  color: var(--color-primary);
+  font-weight: 600;
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Visual Money Flow Component */
+.money-flow-container {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.flow-playback-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.85rem;
+}
+
+.playback-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.step-badge {
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: var(--radius-sm);
+}
+
+.delta-badge {
+  background-color: rgba(249, 115, 22, 0.15);
+  color: #fb923c;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 9999px;
+}
+
+.simple-controls-cluster {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.ctrl-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: var(--bg-card-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ctrl-btn:hover:not(:disabled) {
+  background-color: var(--bg-card-hover);
+  border-color: var(--color-primary);
+}
+
+.ctrl-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-play-highlight {
+  background-color: #0284c7;
+  color: #fff;
+  border-color: #0369a1;
+  font-weight: 600;
+}
+
+.btn-play-highlight.playing {
+  background-color: #d97706;
+  border-color: #b45309;
+}
+
+/* Step Progress Ticks */
+.flow-step-progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.step-tick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex: 1;
+  min-width: 65px;
+  transition: all 0.15s ease;
+}
+
+.step-tick:hover {
+  border-color: var(--text-secondary);
+}
+
+.step-tick.active {
+  border-color: var(--color-primary);
+  color: var(--text-primary);
+}
+
+.step-tick.current {
+  background-color: rgba(239, 68, 68, 0.12);
+  border-color: var(--color-critical);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+.tick-number {
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.tick-amount {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+/* Spotlight Card */
+.transfer-spotlight-card {
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.spotlight-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+}
+
+.spotlight-title {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.spotlight-tx-id {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.flow-stages-visual {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.account-flow-node {
+  background-color: var(--bg-card-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.account-flow-node:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+}
+
+.node-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+}
+
+.node-role-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.node-id {
+  font-size: 0.88rem;
+  color: #fff;
+  word-break: break-all;
+}
+
+.flow-pipe-bridge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1.2;
+  position: relative;
+  text-align: center;
+}
+
+.pipe-line {
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #38bdf8, #ef4444);
+  border-radius: 9999px;
+}
+
+.pipe-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.transfer-amount {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ef4444;
+}
+
+.transfer-time {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.step-explanation-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  background-color: rgba(30, 41, 59, 0.4);
+  border-left: 4px solid var(--color-high);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.step-explanation-box p {
+  margin: 0;
+  color: #e2e8f0;
+}
+
+/* Complete Pipeline List */
+.complete-pipeline-overview h4 {
+  margin: 0 0 0.65rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pipeline-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.pipeline-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-color);
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pipeline-row:hover {
+  background-color: var(--bg-card-secondary);
+  border-color: var(--color-primary);
+}
+
+.pipeline-row-active {
+  background-color: rgba(56, 189, 248, 0.08);
+  border-color: var(--color-primary);
+}
+
+.step-seq-pill {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--bg-card-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pipeline-time {
+  width: 65px;
+}
+
+.pipeline-parties {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.sender-tag { color: var(--color-primary); font-weight: 500; }
+.receiver-tag { color: #f87171; font-weight: 500; }
+
+.pipeline-amount {
+  font-weight: 700;
+  color: #fff;
+  width: 90px;
+  text-align: right;
+}
+
+.pipeline-delta {
+  width: 85px;
+  text-align: right;
+  font-size: 0.74rem;
+}
+
+.now-viewing-badge {
+  font-size: 0.68rem;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background-color: rgba(56, 189, 248, 0.2);
+  color: var(--color-primary);
+  font-weight: 600;
+  text-transform: uppercase;
+}
