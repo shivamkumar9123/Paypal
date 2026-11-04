@@ -250,7 +250,6 @@ export default function App() {
                 selectedGroupId={selectedGroupId}
                 onSelectGroup={(gid) => {
                   setSelectedGroupId(gid);
-                  if (gid) setActiveTab("investigation");
                 }}
                 onSelectNode={(node) => {
                   if (node && node.group_ids && node.group_ids.length > 0) {
