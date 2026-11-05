@@ -1,5 +1,8 @@
+from pathlib import Path
 from fastapi import FastAPI, HTTPException, UploadFile, File, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from typing import Dict, Any, List, Optional
 
@@ -48,8 +51,13 @@ app.add_middleware(
 )
 
 
+FRONTEND_DIST_DIR = Path(__file__).resolve().parents[1] / "frontend" / "dist"
+
+
 @app.get("/")
 def root():
+    if FRONTEND_DIST_DIR.exists() and (FRONTEND_DIST_DIR / "index.html").exists():
+        return FileResponse(str(FRONTEND_DIST_DIR / "index.html"))
     return {
         "service": "FraudRing AI",
         "tagline": "Detecting the connections behind payment fraud.",
@@ -256,3 +264,19 @@ async def paypal_capture_order(request: PayPalCaptureRequest):
         return await capture_sandbox_order(order_id=request.order_id)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+# Static files and Single-Page Application (SPA) serving for unified deployment
+if FRONTEND_DIST_DIR.exists():
+    if (FRONTEND_DIST_DIR / "assets").exists():
+        app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIST_DIR / "assets")), name="assets")
+
+    @app.get("/{full_path:path}")
+    def serve_frontend_spa(full_path: str):
+        # Prevent intercepting API/docs routes if unmatched
+        if full_path.startswith(("api", "docs", "openapi.json", "health", "fraud", "graph", "dashboard", "paypal")):
+            raise HTTPException(status_code=404, detail="Not Found")
+        target_file = FRONTEND_DIST_DIR / full_path
+        if full_path and target_file.is_file():
+            return FileResponse(str(target_file))
+        return FileResponse(str(FRONTEND_DIST_DIR / "index.html"))
